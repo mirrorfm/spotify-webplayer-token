@@ -1,6 +1,7 @@
 package app
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -10,23 +11,30 @@ import (
 
 const UserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36"
 
-func GetAccessTokenFromEnv() (string, error) {
+type Token struct {
+	ClientID                         string `json:"clientId"`
+	AccessToken                      string `json:"accessToken"`
+	AccessTokenExpirationTimestampMs int    `json:"accessTokenExpirationTimestampMs"`
+	IsAnonymous                      bool   `json:"isAnonymous"`
+}
+
+func GetAccessTokenFromEnv() (*Token, error) {
 	spDc, exists := os.LookupEnv("SPOTIFY_DC")
 	if !exists {
 		fmt.Println("missing spotify_key")
-		return "", nil
+		return nil, nil
 	}
 
 	spKey, exists := os.LookupEnv("SPOTIFY_KEY")
 	if !exists {
 		fmt.Println("missing spotify_key")
-		return "", nil
+		return nil, nil
 	}
 
 	return GetAccessToken(spDc, spKey)
 }
 
-func GetAccessToken(spDc, spKey string) (string, error) {
+func GetAccessToken(spDc, spKey string) (*Token, error) {
 	req, _ := http.NewRequest("GET", "https://open.spotify.com/get_access_token?reason=transport&productType=web_player", nil)
 
 	req.Header.Set("user-agent", UserAgent)
@@ -53,18 +61,23 @@ func GetAccessToken(spDc, spKey string) (string, error) {
 	resp, err := client.Do(req)
 	if err != nil {
 		fmt.Println("error during GET request")
-		return "", err
+		return nil, err
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Println("could not read request response body")
-		return "", err
+		return nil, err
 	}
 
 	_ = resp.Body.Close()
 
-	token := string(body)
+	token := Token{}
+	err = json.Unmarshal(body, &token)
+	if err != nil {
+		fmt.Println("could not unmarshal JSON")
+		return nil, err
+	}
 
-	return token, nil
+	return &token, nil
 }
