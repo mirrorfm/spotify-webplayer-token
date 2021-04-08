@@ -2,12 +2,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/mirrorfm/spotify-webplayer-token-go/app"
+	"github.com/mirrorfm/spotify-webplayer-token/app"
 	"os"
 )
 
 func main() {
-	token, err := app.GetAccessToken()
+	token, err := app.GetAccessTokenFromEnv()
 	if err != nil {
 		os.Exit(1)
 	}

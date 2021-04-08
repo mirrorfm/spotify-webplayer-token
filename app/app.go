@@ -10,7 +10,7 @@ import (
 
 const UserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36"
 
-func GetAccessToken() (string, error) {
+func GetAccessTokenFromEnv() (string, error) {
 	spDc, exists := os.LookupEnv("SPOTIFY_DC")
 	if !exists {
 		fmt.Println("missing spotify_key")
@@ -23,6 +23,10 @@ func GetAccessToken() (string, error) {
 		return "", nil
 	}
 
+	return GetAccessToken(spDc, spKey)
+}
+
+func GetAccessToken(spDc, spKey string) (string, error) {
 	req, _ := http.NewRequest("GET", "https://open.spotify.com/get_access_token?reason=transport&productType=web_player", nil)
 
 	req.Header.Set("user-agent", UserAgent)

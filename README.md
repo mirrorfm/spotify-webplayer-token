@@ -1,4 +1,4 @@
-# spotify-webplayer-token-go
+# spotify-webplayer-token
 
 Retrieve a webplayer Spotify token that is valid for 1 year.
 
