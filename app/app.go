@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"net/http/cookiejar"
 	"os"
 )
 
@@ -38,25 +37,10 @@ func GetAccessToken(spDc, spKey string) (*Token, error) {
 	req, _ := http.NewRequest("GET", "https://open.spotify.com/get_access_token?reason=transport&productType=web_player", nil)
 
 	req.Header.Set("user-agent", UserAgent)
+	// can it use cookiejar? https://gist.github.com/stephanebruckert/d35dfc39276ca742a2e1b96fe9e97df4
+	req.Header.Set("cookie", fmt.Sprintf("sp_dc=%s; sp_key=%s", spDc, spKey))
 
-	jar, _ := cookiejar.New(nil)
-	var cookies []*http.Cookie
-	cookie := &http.Cookie{
-		Name:  "sp_dc",
-		Value: spDc,
-	}
-	cookies = append(cookies, cookie)
-
-	cookie = &http.Cookie{
-		Name:  "sp_key",
-		Value: spKey,
-	}
-
-	cookies = append(cookies, cookie)
-
-	client := &http.Client{
-		Jar: jar,
-	}
+	client := &http.Client{}
 
 	resp, err := client.Do(req)
 	if err != nil {
